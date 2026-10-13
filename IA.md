@@ -18,3 +18,10 @@
 * **Instrucción dada:** Pregunte por que crear en modulos.
 * **Respuesta recibida:** Me propuso una clase `Mensaje` con texto, autor y fecha.
 * **Cambios realizados y motivo:** Creé `mensaje.dart` con la clase `Mensaje`.
+
+## Registro - Splash con imagen de red
+* **Herramienta:** Claude
+* **Parte de la tarea:** `screens/splash_screen.dart` y ruta `/splash` en `MiApp.dart`.
+* **Instrucción dada:** Le pedí una pantalla de inicio con una imagen de una URL, con estado de carga y de error.
+* **Respuesta recibida:** Un `Image.network` con `loadingBuilder` y `errorBuilder`, y un `Timer` que pasa al login a los 3 segundos.
+* **Cambios realizados y motivo:** Creé la pantalla y cambié la imagen por `https://picsum.photos/300` porque la anterior era de Pinterest y podía dejar de funcionar. Actualicé el test para el flujo splash a login.
