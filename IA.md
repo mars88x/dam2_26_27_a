@@ -25,3 +25,10 @@
 * **Instrucción dada:** Le pedí una pantalla de inicio con una imagen de una URL, con estado de carga y de error.
 * **Respuesta recibida:** Un `Image.network` con `loadingBuilder` y `errorBuilder`, y un `Timer` que pasa al login a los 3 segundos.
 * **Cambios realizados y motivo:** Creé la pantalla y cambié la imagen por `https://picsum.photos/300` porque la anterior era de Pinterest y podía dejar de funcionar. Actualicé el test para el flujo splash a login.
+
+## Registro - Onboarding con SharedPreferences
+* **Herramienta:** Claude
+* **Parte de la tarea:** `screens/onboarding_screen.dart` y lógica del splash para mostrarlo solo la primera vez.
+* **Instrucción dada:** Le pedí un onboarding de 3 pantallas deslizables, con opción de saltarlo, que solo aparezca la primera vez.
+* **Respuesta recibida:** Una pantalla con `PageView`, botones Saltar y Siguiente/Empezar, y el uso de `shared_preferences` para guardar la clave `onboarding_visto`.
+* **Cambios realizados y motivo:** Añadí `shared_preferences`, creé la pantalla, registré la ruta `/onboarding` en `MiApp.dart` y modifiqué el splash para decidir si va al onboarding o al login. Corregí un error al pegar la ruta en la zona de imports.
