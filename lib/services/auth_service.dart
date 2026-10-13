@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
+  String? get correoActual => FirebaseAuth.instance.currentUser?.email;
+
   // Devuelve null si todo va bien, o el mensaje de error para mostrar.
   Future<String?> registrar(String correo, String contrasena) async {
     try {
