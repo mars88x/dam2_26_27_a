@@ -9,7 +9,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  static const String _urlImagen = 'https://i.pinimg.com/originals/68/c8/93/68c89392a8a563012ed9f0e14ec57455.gif';
+  static const String _urlImagen = 'https://picsum.photos/300';
   Timer? _temporizador;
 
   @override
