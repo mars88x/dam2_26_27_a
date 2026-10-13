@@ -4,7 +4,7 @@ class AuthService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
   String? get correoActual => FirebaseAuth.instance.currentUser?.email;
-
+  String? get uidActual => FirebaseAuth.instance.currentUser?.uid;
   // Devuelve null si todo va bien, o el mensaje de error para mostrar.
   Future<String?> registrar(String correo, String contrasena) async {
     try {

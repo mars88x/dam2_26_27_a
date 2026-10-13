@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../models/perfil.dart';
+import '../services/perfiles_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +24,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _enviar(Future<String?> Function(String, String) accion) async {
+   Future<void> _enviar(
+      Future<String?> Function(String, String) accion, {
+        bool esRegistro = false,
+      }) async {
     final correo = _correoController.text.trim();
     final contrasena = _contrasenaController.text;
 
@@ -40,6 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (error == null) {
+      if (esRegistro) {
+        await PerfilesService().guardar(
+          _auth.uidActual!,
+          Perfil(nombre: correo.split('@').first, edad: 0),
+        );
+        if (!mounted) return;
+      }
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       setState(() {
@@ -95,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(width: 12),
                   OutlinedButton(
-                    onPressed: () => _enviar(_auth.registrar),
+                    onPressed: () => _enviar(_auth.registrar, esRegistro: true),
                     child: const Text("Registrarse"),
                   ),
                 ],
