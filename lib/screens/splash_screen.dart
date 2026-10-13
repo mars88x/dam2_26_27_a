@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Mi App',
+              'Messend',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
           ],

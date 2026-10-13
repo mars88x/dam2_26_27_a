@@ -11,7 +11,7 @@ class MiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MI APP 1',
+      title: 'Messend',
       debugShowCheckedModeBanner: false,
       initialRoute: '/splash',
       routes: {

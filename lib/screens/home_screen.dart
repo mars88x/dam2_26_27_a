@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi App')),
+      appBar: AppBar(title: const Text('Messend')),
       body: secciones[_seccion],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _seccion,

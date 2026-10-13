@@ -5,7 +5,7 @@ import 'package:dam2_26_27_a/MiApp.dart';
 void main() {
   testWidgets('La app arranca en el splash y pasa al login', (WidgetTester tester) async {
     await tester.pumpWidget(const MiApp());
-    expect(find.text('Mi App'), findsOneWidget);
+    expect(find.text('Messend'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();

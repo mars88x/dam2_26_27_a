@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="dam2_26_27_a"
+        android:label="Messend"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
