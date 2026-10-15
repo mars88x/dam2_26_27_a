@@ -4,6 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/detalle_screen.dart';
+import 'theme/app_tema.dart';
 
 class MiApp extends StatelessWidget {
   const MiApp({super.key});
@@ -13,6 +14,7 @@ class MiApp extends StatelessWidget {
     return MaterialApp(
       title: 'Messend',
       debugShowCheckedModeBanner: false,
+      theme: AppTema.claro,
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),
