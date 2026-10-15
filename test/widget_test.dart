@@ -10,7 +10,7 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
-    expect(find.text('LOGIN'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
     expect(find.text('Registrarse'), findsOneWidget);
   });
 }
