@@ -61,7 +61,7 @@ Además, `MiApp.dart` concentra la tabla de rutas y `main.dart` solo inicializa 
 | Colección | Contenido | Documentos |
 |-----------|-----------|------------|
 | `perfiles` | Un documento por usuario (id = uid): `nombre`, `edad` | Se crea uno al registrarse; incluye usuarios de prueba |
-| `mensajes` | Contenido de la app: `texto`, `autor`, `fecha` | [N] documentos de prueba |
+| `mensajes` | Contenido de la app: `texto`, `autor`, `fecha` | [10] documentos de prueba |
 
 Los modelos `Perfil` y `Mensaje` usan `withConverter` con `fromFirestore` y `toFirestore`, así los servicios devuelven objetos tipados y no mapas.
 
