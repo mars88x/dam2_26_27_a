@@ -6,6 +6,7 @@ import '../services/mensajes_service.dart';
 import '../widgets/mensajes_lista.dart';
 import '../widgets/mensajes_cuadricula.dart';
 import '../theme/app_tema.dart';
+import '../widgets/fondo_messend.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -208,7 +209,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: secciones[_seccion],
+      body: FondoMessend(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: secciones[_seccion],
+          ),
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _seccion,
         onDestinationSelected: (i) => setState(() => _seccion = i),
