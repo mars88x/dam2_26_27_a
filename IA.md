@@ -32,3 +32,45 @@
 * **Instrucción dada:** Le pedí un onboarding de 3 pantallas deslizables, con opción de saltarlo, que solo aparezca la primera vez.
 * **Respuesta recibida:** Una pantalla con `PageView`, botones Saltar y Siguiente/Empezar, y el uso de `shared_preferences` para guardar la clave `onboarding_visto`.
 * **Cambios realizados y motivo:** Añadí `shared_preferences`, creé la pantalla, registré la ruta `/onboarding` en `MiApp.dart` y modifiqué el splash para decidir si va al onboarding o al login. Corregí un error al pegar la ruta en la zona de imports.
+
+## Registro - AuthService con Firebase Authentication
+* **Herramienta:** Claude
+* **Parte de la tarea:** Servicio de autenticación en `services/auth_service.dart` (registro, inicio de sesión y cierre de sesión).
+* **Instrucción dada:** Pedí ayuda para conectar el registro y el login con Firebase Authentication y para controlar los errores de correo ya en uso, contraseña débil y credenciales incorrectas.
+* **Respuesta recibida:** Código de la clase `AuthService` con `registrar`, `iniciarSesion` y `cerrarSesion`, y una función que traduce los códigos de `FirebaseAuthException` a mensajes en español.
+* **Cambios realizados y motivo:** Copié la clase y la revisé línea por línea. Cada método devuelve `null` si todo va bien o el texto del error, para que la pantalla solo lo muestre. Añadí `correoActual` y `uidActual` porque los necesito en Home y al crear el perfil.
+
+## Registro - Login conectado a Firebase
+* **Herramienta:** Claude
+* **Parte de la tarea:** Adaptar `screens/login_screen.dart` para usar `AuthService` y mostrar los errores en pantalla.
+* **Instrucción dada:** Pedí cómo llamar al servicio desde los botones Login y Registrarse sin tener código de Firebase dentro de la pantalla.
+* **Respuesta recibida:** Un método `_enviar` que llama al servicio, muestra el error si lo hay y navega a `/home` si todo sale bien, con la comprobación `if (!mounted) return;` tras cada `await`.
+* **Cambios realizados y motivo:** Lo integré en mi pantalla. Usé `TextEditingController` y los liberé en `dispose()` para evitar fugas de memoria. Probé a mano los tres errores pedidos.
+
+## Registro - Firestore, colecciones y modelo Perfil
+* **Herramienta:** Claude
+* **Parte de la tarea:** Colecciones `perfiles` y `mensajes` en Firestore, modelo `Perfil` y `PerfilesService`.
+* **Instrucción dada:** Pedí cómo estructurar las colecciones y cómo usar `withConverter` con `fromFirestore` y `toFirestore` para que los servicios devuelvan objetos tipados.
+* **Respuesta recibida:** Estructura de los documentos, el modelo `Perfil` con sus conversores y `PerfilesService` con `guardar(uid, perfil)` y `obtener(uid)`.
+* **Cambios realizados y motivo:** Creé a mano en la consola los documentos de prueba. Hice que el documento del perfil use el `uid` del usuario como id y que se cree al registrarse. Entendí que `edad` se lee como `num` y se convierte a `int` porque Firestore guarda los números de forma genérica.
+
+## Registro - Lista, cuadrícula, detalle y barra inferior
+* **Herramienta:** Claude
+* **Parte de la tarea:** `home_screen.dart` con barra inferior de 3 secciones, `widgets/mensajes_lista.dart`, `widgets/mensajes_cuadricula.dart` y `detalle_screen.dart`.
+* **Instrucción dada:** Pedí cómo mostrar los mensajes de Firestore en lista y cuadrícula con estados de carga, vacío y error, y cómo pasar un mensaje a otra pantalla por ruta con parámetros.
+* **Respuesta recibida:** Código de Home con `BottomNavigationBar`, una suscripción al stream de mensajes, widgets de lista y cuadrícula, y el paso del `Mensaje` con `Navigator.pushNamed(..., arguments:)`.
+* **Cambios realizados y motivo:** Cancelé la suscripción en `dispose()` y antes de cerrar sesión. Separé lista y cuadrícula en widgets propios para no llenar Home de código. Añadí la ruta `/detalle` en `MiApp.dart`.
+
+## Registro - Cambio de nombre a Messend
+* **Herramienta:** Claude
+* **Parte de la tarea:** Renombrar la app en `AndroidManifest.xml`, `web/index.html` y `web/manifest.json`.
+* **Instrucción dada:** Pedí qué archivos cambiar para que la app se llame Messend en Android y en el navegador.
+* **Respuesta recibida:** Lista de archivos y líneas con el nombre.
+* **Cambios realizados y motivo:** Cambié el texto en esos archivos y comprobé en el commit que solo cambiaba el nombre. Los avisos del análisis en esos archivos eran falsos positivos de las plantillas de Flutter.
+
+## Registro - README y configuración de Firebase en otro equipo
+* **Herramienta:** Claude
+* **Parte de la tarea:** `README.md` y guía de arranque (`flutterfire configure`).
+* **Instrucción dada:** Pedí ayuda para redactar el README con la estructura, la explicación del por qué, Firebase, las pruebas y los pasos para arrancar el proyecto, y para regenerar los archivos de Firebase que no están en el repositorio.
+* **Respuesta recibida:** Un borrador del README, incluido el apartado "Por qué esta estructura", y los comandos de `flutterfire configure`.
+* **Cambios realizados y motivo:** Revisé el texto contra mi código y lo ajusté. Lo del apartado 2 lo he leído y sé explicarlo. Probé la guía de arranque en un segundo equipo clonando el repositorio y regenerando los archivos de configuración, que están en `.gitignore`.
