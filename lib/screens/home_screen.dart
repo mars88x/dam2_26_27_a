@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/mensajes_service.dart';
 import '../widgets/mensajes_lista.dart';
 import '../widgets/mensajes_cuadricula.dart';
+import '../theme/app_tema.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,17 +48,132 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Gestiona los estados de error, carga y vacío para lista y cuadrícula.
+  String get _iniciales {
+    final correo = _auth.correoActual ?? '?';
+    return correo.substring(0, correo.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  Widget _estado(IconData icono, String titulo, String texto) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTema.lavanda,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(icono, size: 48, color: AppTema.principal),
+            ),
+            const SizedBox(height: 24),
+            Text(titulo,
+                textAlign: TextAlign.center,
+                style:
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            Text(texto,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppTema.textoSuave)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Gestiona los estados de error, carga y vacío para lista y cuadrícula.
   Widget _conEstados(Widget Function(List<Mensaje>) construir) {
     if (_error != null) {
-      return const Center(child: Text('No se pudieron cargar los mensajes.'));
+      return _estado(
+        Icons.cloud_off,
+        'No se pudieron cargar los mensajes.',
+        'Parece que la conexión se ha tomado una pausa. Vuelve a intentarlo más tarde.',
+      );
     }
     if (_mensajes == null) {
       return const Center(child: CircularProgressIndicator());
     }
     if (_mensajes!.isEmpty) {
-      return const Center(child: Text('Todavía no hay mensajes.'));
+      return _estado(
+        Icons.forum_outlined,
+        'Todavía no hay mensajes.',
+        'Cada conversación tiene un comienzo. Tus mensajes aparecerán aquí.',
+      );
     }
-    return construir(_mensajes!);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text('Tus mensajes',
+                    style:
+                    TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              ),
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTema.lavanda,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('${_mensajes!.length} mensajes',
+                    style: const TextStyle(
+                        color: AppTema.principal,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: construir(_mensajes!)),
+      ],
+    );
+  }
+
+  Widget _perfil() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Mi perfil',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppTema.lavanda,
+                    child: Text(_iniciales,
+                        style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: AppTema.principal)),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(_auth.correoActual ?? 'Sin sesión',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: _cerrarSesion,
+            icon: const Icon(Icons.logout),
+            label: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -65,32 +181,43 @@ class _HomeScreenState extends State<HomeScreen> {
     final secciones = [
       _conEstados((m) => MensajesLista(mensajes: m)),
       _conEstados((m) => MensajesCuadricula(mensajes: m)),
-      Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.person, size: 80),
-            Text(_auth.correoActual ?? 'Sin sesión'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _cerrarSesion,
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        ),
-      ),
+      _perfil(),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Messend')),
+      appBar: AppBar(
+        title: const Row(
+          children: [
+            Icon(Icons.chat_bubble_rounded, color: AppTema.principal),
+            SizedBox(width: 8),
+            Text('Messend'),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTema.lavanda,
+              child: Text(_iniciales,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppTema.principal)),
+            ),
+          ),
+        ],
+      ),
       body: secciones[_seccion],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _seccion,
-        onTap: (i) => setState(() => _seccion = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Lista'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Cuadrícula'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _seccion,
+        onDestinationSelected: (i) => setState(() => _seccion = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.list), label: 'Lista'),
+          NavigationDestination(
+              icon: Icon(Icons.grid_view), label: 'Cuadrícula'),
+          NavigationDestination(
+              icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],
       ),
     );
