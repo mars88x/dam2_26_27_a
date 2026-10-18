@@ -74,3 +74,10 @@
 * **Instrucción dada:** Pedí ayuda para redactar el README con la estructura, la explicación del por qué, Firebase, las pruebas y los pasos para arrancar el proyecto, y para regenerar los archivos de Firebase que no están en el repositorio.
 * **Respuesta recibida:** Un borrador del README, incluido el apartado "Por qué esta estructura", y los comandos de `flutterfire configure`.
 * **Cambios realizados y motivo:** Revisé el texto contra mi código y lo ajusté. Lo del apartado 2 lo he leído y sé explicarlo. Probé la guía de arranque en un segundo equipo clonando el repositorio y regenerando los archivos de configuración, que están en `.gitignore`.
+
+## Registro - Rediseño visual de la app
+* **Herramienta:** Claude
+* **Parte de la tarea:** Tema de la app (`theme/app_tema.dart`), `widgets/fondo_messend.dart` y el aspecto de splash, onboarding, login, Home y detalle.
+* **Instrucción dada:** Mandé mi diseño de Figma y unas imágenes de referencia y pedí un estilo luminoso en azul y verde, con un fondo para las pantallas.
+* **Respuesta recibida:** Un tema con la paleta, un fondo con degradado y círculos difuminados, y el código rediseñado de cada pantalla.
+* **Cambios realizados y motivo:** Rechacé la primera propuesta porque no me gustaba y pedí otra con más azul y verde. Moví una línea `theme:` que había quedado fuera de `MaterialApp` y apilé los botones del login porque se desbordaban. Revisé que la lógica de las pantallas no cambiara, solo el aspecto.
