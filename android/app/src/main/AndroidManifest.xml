@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Internet también en release: los mapas y Firebase lo necesitan. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Cámara: se pide en ejecución al hacer una foto. required=false para
+         que la app también se instale en dispositivos sin cámara. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Localización: aproximada (red) y precisa (GPS). Se piden en ejecución. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
