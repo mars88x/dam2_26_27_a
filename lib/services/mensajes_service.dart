@@ -77,6 +77,17 @@ class MensajesService {
     return resultado.docs.map((d) => d.data()).toList();
   }
 
+  // Mensajes que llevan posición, para el mapa. Firestore no tiene un "campo
+  // existe" cómodo, así que se leen los 100 últimos y se filtra aquí.
+  Future<List<Mensaje>> conUbicacion() async {
+    final resultado =
+    await _coleccion.orderBy('fecha', descending: true).limit(100).get();
+    return resultado.docs
+        .map((d) => d.data())
+        .where((m) => m.ubicacion != null)
+        .toList();
+  }
+
   // Cambia solo el texto. Si el mensaje no es tuyo, las reglas lo rechazan
   // con permission-denied aunque la interfaz no ofrezca el botón.
   Future<void> actualizarTexto(String id, String texto) async {
