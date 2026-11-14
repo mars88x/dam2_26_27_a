@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfiles: los ve cualquiera con sesión; cada uno solo escribe el suyo
+    // (el id del documento es el uid).
+    match /perfiles/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // Mensajes: los ve cualquiera con sesión. Solo el autor puede crear con su
+    // uid, editar o borrar, y nadie puede cambiar de quién es un mensaje.
+    match /mensajes/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.autorUid == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.autorUid == request.auth.uid
+                    && request.resource.data.autorUid == resource.data.autorUid;
+      allow delete: if request.auth != null
+                    && resource.data.autorUid == request.auth.uid;
+    }
+  }
+}
