@@ -45,6 +45,27 @@ const mensajes = [
   [0, 'Último empujón antes de la entrega.', '2026-11-12T22:40:00Z'],
 ];
 
+// Dónde estaba quien escribió cada mensaje (índice del mensaje -> [lat, lng]).
+// Los que no aparecen no llevan posición. Son lugares de Madrid y alrededores.
+const lugares = {
+  0: [40.4168, -3.7038], // Puerta del Sol
+  1: [40.4153, -3.6844], // Retiro
+  2: [40.4167, -3.75], // Casa de Campo
+  3: [40.4065, -3.6895], // Atocha
+  5: [40.4725, -3.6823], // Chamartín
+  6: [40.4818, -3.3635], // Alcalá de Henares
+  8: [40.6326, -3.1667], // Guadalajara
+  9: [40.3057, -3.7329], // Getafe
+  10: [40.3272, -3.7635], // Leganés
+  12: [40.5475, -3.642], // Alcobendas
+  13: [40.4351, -3.8138], // Pozuelo
+  15: [40.3601, -3.5167], // Rivas
+  16: [40.4553, -3.4707], // Torrejón
+  18: [40.0332, -3.6027], // Aranjuez
+  19: [39.8628, -4.0273], // Toledo
+  21: [40.9429, -4.1088], // Segovia
+};
+
 async function enviarJson(url, metodo, cuerpo, cabeceras = {}) {
   const r = await fetch(url, {
     method: metodo,
@@ -91,12 +112,19 @@ try {
   for (let i = 0; i < mensajes.length; i++) {
     const [quien, t, fecha] = mensajes[i];
     const id = `semilla-${String(i + 1).padStart(2, '0')}`;
-    await guardarDoc(`mensajes/${id}`, {
+    const campos = {
       texto: texto(t),
       autor: texto(usuarios[quien].nombre),
       autorUid: texto(uids[quien]),
       fecha: { timestampValue: fecha },
-    });
+    };
+    if (lugares[i]) {
+      campos.ubicacion = {
+        geoPointValue: { latitude: lugares[i][0], longitude: lugares[i][1] },
+      };
+      campos.fechaUbicacion = { timestampValue: fecha };
+    }
+    await guardarDoc(`mensajes/${id}`, campos);
   }
   console.log(`Listo: ${usuarios.length} usuarios y ${mensajes.length} mensajes.`);
 } catch (e) {
