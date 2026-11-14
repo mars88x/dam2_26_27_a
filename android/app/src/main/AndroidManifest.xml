@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet también en release: los mapas y Firebase lo necesitan. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Localización: aproximada (red) y precisa (GPS). Se piden en ejecución. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
