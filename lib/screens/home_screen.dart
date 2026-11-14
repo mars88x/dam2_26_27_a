@@ -6,6 +6,7 @@ import '../services/mensajes_service.dart';
 import '../widgets/mensajes_lista.dart';
 import '../widgets/cuadricula_paginada.dart';
 import '../widgets/buscar_mensajes.dart';
+import '../widgets/mapa_mensajes.dart';
 import '../widgets/estado_pantalla.dart';
 import '../theme/app_tema.dart';
 import '../widgets/fondo_messend.dart';
@@ -167,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _conEstados((m) => MensajesLista(mensajes: m)),
       CuadriculaPaginada(key: ValueKey('cuadricula$_version')),
       BuscarMensajes(key: ValueKey('buscar$_version')),
+      MapaMensajes(key: ValueKey('mapa$_version')),
       _perfil(),
     ];
 
@@ -215,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
               icon: Icon(Icons.grid_view), label: 'Cuadrícula'),
           NavigationDestination(icon: Icon(Icons.search), label: 'Buscar'),
+          NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Mapa'),
           NavigationDestination(
               icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],
