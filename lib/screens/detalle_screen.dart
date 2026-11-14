@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/mensaje.dart';
@@ -141,6 +142,18 @@ class _DetalleScreenState extends State<DetalleScreen> {
                       ),
                     ),
                   ),
+                  if (_mensaje.foto != null) ...[
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppTema.radio),
+                      child: Image.memory(
+                        base64Decode(_mensaje.foto!),
+                        width: double.infinity,
+                        height: 260,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Row(children: [
                     const Icon(Icons.person_outline,

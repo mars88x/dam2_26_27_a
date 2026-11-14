@@ -11,6 +11,8 @@ class Mensaje {
   // Dónde estaba quien lo escribió y cuándo se leyó esa posición (opcionales).
   final GeoPoint? ubicacion;
   final DateTime? fechaUbicacion;
+  // Miniatura JPEG (menos de 300 KB) guardada como texto base64 en el documento.
+  final String? foto;
 
   const Mensaje({
     this.id,
@@ -20,6 +22,7 @@ class Mensaje {
     required this.fecha,
     this.ubicacion,
     this.fechaUbicacion,
+    this.foto,
   });
 
   // Copia con el texto cambiado (el resto de campos se conserva).
@@ -31,6 +34,7 @@ class Mensaje {
         fecha: fecha,
         ubicacion: ubicacion,
         fechaUbicacion: fechaUbicacion,
+        foto: foto,
       );
 
   // Firestore - objeto Mensaje
@@ -47,6 +51,7 @@ class Mensaje {
       fecha: (datos['fecha'] as Timestamp).toDate(),
       ubicacion: datos['ubicacion'] as GeoPoint?,
       fechaUbicacion: (datos['fechaUbicacion'] as Timestamp?)?.toDate(),
+      foto: datos['foto'] as String?,
     );
   }
 
@@ -61,6 +66,7 @@ class Mensaje {
       if (ubicacion != null) 'ubicacion': ubicacion,
       if (fechaUbicacion != null)
         'fechaUbicacion': Timestamp.fromDate(fechaUbicacion!),
+      if (foto != null) 'foto': foto,
     };
   }
 }

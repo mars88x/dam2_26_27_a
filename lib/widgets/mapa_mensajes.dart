@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/mensaje.dart';
 import '../services/cercania.dart';
 import '../services/mensajes_service.dart';
+import '../services/trabajo_isolate.dart';
 import '../services/ubicacion_service.dart';
 import '../theme/app_tema.dart';
 import 'estado_pantalla.dart';
@@ -17,6 +17,8 @@ class _Cercano {
 }
 
 // Pestaña Mapa: arriba se elige entre el mapa y la lista "Cerca de mí".
+// Al abrirla se pide la posición del usuario (es para lo que sirve la pestaña)
+// y el mapa se centra en él.
 class MapaMensajes extends StatefulWidget {
   const MapaMensajes({super.key});
 
@@ -33,11 +35,15 @@ class _MapaMensajesState extends State<MapaMensajes> {
   bool _cargando = true;
   bool _verLista = false;
 
+  // Mi posición (null si no se pudo leer) y por qué falló.
+  LatLng? _miPosicion;
+  FalloUbicacion? _fallo;
+
   // Estado de "Cerca de mí"
   bool _calculando = false;
-  FalloUbicacion? _fallo;
+  double _progreso = 0;
   List<_Cercano>? _cercanos;
-  LatLng? _miPosicion;
+  int? _milisegundos; // lo que tardó el cálculo, para medirlo
 
   @override
   void initState() {
@@ -53,17 +59,41 @@ class _MapaMensajesState extends State<MapaMensajes> {
     try {
       final lista = await _servicio.conUbicacion();
       if (!mounted) return;
-      setState(() {
-        _mensajes = lista;
-        _cargando = false;
-      });
+      setState(() => _mensajes = lista);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _error = e;
         _cargando = false;
       });
+      return;
     }
+    // La posición solo se pide la primera vez; al recargar se reutiliza.
+    if (_miPosicion == null) await _leerPosicion();
+    if (!mounted) return;
+    setState(() => _cargando = false);
+  }
+
+  // Intenta leer mi posición. Si falla, el mapa se ve igual pero sin centrarse
+  // en mí, y se explica el motivo.
+  Future<void> _leerPosicion() async {
+    final r = await _ubicacion.obtener();
+    if (!mounted) return;
+    setState(() {
+      if (r.posicion != null) {
+        _miPosicion = LatLng(r.posicion!.latitude, r.posicion!.longitude);
+        _fallo = null;
+      } else {
+        _fallo = r.fallo;
+      }
+    });
+  }
+
+  Future<void> _reintentarPosicion() async {
+    setState(() => _cargando = true);
+    await _leerPosicion();
+    if (!mounted) return;
+    setState(() => _cargando = false);
   }
 
   Future<void> _abrirDetalle(Mensaje m) async {
@@ -71,36 +101,33 @@ class _MapaMensajesState extends State<MapaMensajes> {
     if (mounted) _cargar(); // por si se editó o se borró
   }
 
-  // Lee mi posición y calcula las distancias en un isolate.
+  // Ordena por distancia en un isolate, avisando del progreso.
   Future<void> _calcularCercanos() async {
     final mensajes = _mensajes;
-    if (mensajes == null || mensajes.isEmpty) return;
+    final yo = _miPosicion;
+    if (mensajes == null || mensajes.isEmpty || yo == null) return;
     setState(() {
       _calculando = true;
-      _fallo = null;
+      _progreso = 0;
     });
-    final r = await _ubicacion.obtener();
-    if (!mounted) return;
-    if (r.posicion == null) {
-      setState(() {
-        _fallo = r.fallo;
-        _calculando = false;
-      });
-      return;
-    }
-    final pos = r.posicion!;
-    final datos = <double>[pos.latitude, pos.longitude];
+    final datos = <double>[yo.latitude, yo.longitude];
     for (final m in mensajes) {
       datos.add(m.ubicacion!.latitude);
       datos.add(m.ubicacion!.longitude);
     }
-    // compute lanza ordenarPorDistancia en otro isolate y espera el resultado.
-    // En la web no hay isolates: Flutter lo ejecuta en el hilo principal.
-    final orden = await compute(ordenarPorDistancia, datos);
+    final reloj = Stopwatch()..start();
+    final orden = await correrConProgreso(
+      ordenarPorDistancia,
+      datos,
+          (p) {
+        if (mounted) setState(() => _progreso = p);
+      },
+    );
+    reloj.stop();
     if (!mounted) return;
     setState(() {
-      _miPosicion = LatLng(pos.latitude, pos.longitude);
       _cercanos = [for (final o in orden) _Cercano(mensajes[o[0].toInt()], o[1])];
+      _milisegundos = reloj.elapsedMilliseconds;
       _calculando = false;
     });
   }
@@ -124,8 +151,40 @@ class _MapaMensajesState extends State<MapaMensajes> {
         selected: {_verLista},
         onSelectionChanged: (s) {
           setState(() => _verLista = s.first);
-          if (_verLista && _cercanos == null && !_calculando) _calcularCercanos();
+          if (_verLista &&
+              _cercanos == null &&
+              !_calculando &&
+              _miPosicion != null) {
+            _calcularCercanos();
+          }
         },
+      ),
+    );
+  }
+
+  // Aviso cuando no se pudo leer mi posición, con su salida.
+  Widget _avisoSinPosicion() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Card(
+        color: AppTema.errorSuave,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const Icon(Icons.location_off, color: AppTema.error),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(_fallo!.mensaje,
+                    style: const TextStyle(fontSize: 13)),
+              ),
+              TextButton(
+                onPressed: _reintentarPosicion,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -135,12 +194,15 @@ class _MapaMensajesState extends State<MapaMensajes> {
       for (final m in mensajes)
         LatLng(m.ubicacion!.latitude, m.ubicacion!.longitude)
     ];
+    final yo = _miPosicion;
     return FlutterMap(
+      // Si cambia mi posición se reconstruye el mapa para centrarlo en ella.
+      key: ValueKey(yo),
       options: MapOptions(
-        // Con 2 puntos o más, el mapa se ajusta para que se vean todos.
-        initialCenter: puntos.first,
-        initialZoom: 12,
-        initialCameraFit: puntos.length > 1
+        // Centrado en mí. Sin mi posición, se ajusta para ver todos los pines.
+        initialCenter: yo ?? puntos.first,
+        initialZoom: 13,
+        initialCameraFit: yo == null && puntos.length > 1
             ? CameraFit.bounds(
             bounds: LatLngBounds.fromPoints(puntos),
             padding: const EdgeInsets.all(48))
@@ -167,12 +229,18 @@ class _MapaMensajesState extends State<MapaMensajes> {
                       size: 44, color: AppTema.principal),
                 ),
               ),
-            if (_miPosicion != null)
+            if (yo != null)
               Marker(
-                point: _miPosicion!,
-                width: 24,
-                height: 24,
-                child: const Icon(Icons.my_location, color: AppTema.acento),
+                point: yo,
+                width: 28,
+                height: 28,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTema.acento,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                  ),
+                ),
               ),
           ],
         ),
@@ -185,25 +253,31 @@ class _MapaMensajesState extends State<MapaMensajes> {
   }
 
   Widget _listaCercanos() {
-    if (_calculando) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Buscando tu posición y calculando distancias...'),
-          ],
-        ),
-      );
-    }
-    if (_fallo != null) {
+    if (_miPosicion == null) {
       return EstadoPantalla(
         icono: Icons.location_off,
         titulo: 'No se pudo leer tu posición.',
-        texto: _fallo!.mensaje,
+        texto: _fallo?.mensaje ?? 'Inténtalo de nuevo.',
         etiquetaBoton: 'Reintentar',
-        alPulsar: _calcularCercanos,
+        alPulsar: () async {
+          await _reintentarPosicion();
+          if (_miPosicion != null) _calcularCercanos();
+        },
+      );
+    }
+    if (_calculando) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Calculando distancias... ${(_progreso * 100).round()} %'),
+              const SizedBox(height: 16),
+              LinearProgressIndicator(value: _progreso),
+            ],
+          ),
+        ),
       );
     }
     final lista = _cercanos;
@@ -214,13 +288,20 @@ class _MapaMensajesState extends State<MapaMensajes> {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         if (i == 0) {
-          return Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: _calcularCercanos,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Actualizar'),
-            ),
+          return Row(
+            children: [
+              Expanded(
+                child: Text(
+                    '${lista.length} mensajes ordenados en $_milisegundos ms',
+                    style: const TextStyle(
+                        fontSize: 12, color: AppTema.textoSuave)),
+              ),
+              TextButton.icon(
+                onPressed: _calcularCercanos,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Actualizar'),
+              ),
+            ],
           );
         }
         final c = lista[i - 1];
@@ -249,7 +330,18 @@ class _MapaMensajesState extends State<MapaMensajes> {
 
   @override
   Widget build(BuildContext context) {
-    if (_cargando) return const Center(child: CircularProgressIndicator());
+    if (_cargando) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Cargando el mapa y buscando tu posición...'),
+          ],
+        ),
+      );
+    }
     if (_error != null) {
       return EstadoPantalla(
         icono: Icons.cloud_off,
@@ -269,6 +361,7 @@ class _MapaMensajesState extends State<MapaMensajes> {
     return Column(
       children: [
         _selector(),
+        if (_fallo != null && !_verLista) _avisoSinPosicion(),
         Expanded(
           child: _verLista
               ? _listaCercanos()

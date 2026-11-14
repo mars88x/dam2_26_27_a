@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/mensaje.dart';
 import '../theme/app_tema.dart';
@@ -21,8 +22,20 @@ class MensajesLista extends StatelessWidget {
           child: ListTile(
             contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            leading: CircleAvatar(
-              backgroundColor: AppTema.pasteles[i % AppTema.pasteles.length],
+            leading: m.foto != null
+                ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                base64Decode(m.foto!),
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                gaplessPlayback: true,
+              ),
+            )
+                : CircleAvatar(
+              backgroundColor:
+              AppTema.pasteles[i % AppTema.pasteles.length],
               child: Text(
                 m.autor.isEmpty ? '?' : m.autor[0].toUpperCase(),
                 style: const TextStyle(
