@@ -4,7 +4,9 @@ import '../models/mensaje.dart';
 import '../services/auth_service.dart';
 import '../services/mensajes_service.dart';
 import '../widgets/mensajes_lista.dart';
-import '../widgets/mensajes_cuadricula.dart';
+import '../widgets/cuadricula_paginada.dart';
+import '../widgets/buscar_mensajes.dart';
+import '../widgets/estado_pantalla.dart';
 import '../theme/app_tema.dart';
 import '../widgets/fondo_messend.dart';
 
@@ -55,36 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _estado(IconData icono, String titulo, String texto) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTema.lavanda,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(icono, size: 48, color: AppTema.principal),
-            ),
-            const SizedBox(height: 24),
-            Text(titulo,
-                textAlign: TextAlign.center,
-                style:
-                const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
-            Text(texto,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTema.textoSuave)),
-          ],
-        ),
-      ),
-    );
+    return EstadoPantalla(icono: icono, titulo: titulo, texto: texto);
   }
 
-  // Gestiona los estados de error, carga y vacío para lista y cuadrícula.
+  // Gestiona los estados de error, carga y vacío de la lista.
   Widget _conEstados(Widget Function(List<Mensaje>) construir) {
     if (_error != null) {
       return _estado(
@@ -110,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               const Expanded(
-                child: Text('Tus mensajes',
+                child: Text('Últimos mensajes',
                     style:
                     TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
               ),
@@ -181,7 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final secciones = [
       _conEstados((m) => MensajesLista(mensajes: m)),
-      _conEstados((m) => MensajesCuadricula(mensajes: m)),
+      const CuadriculaPaginada(),
+      const BuscarMensajes(),
       _perfil(),
     ];
 
@@ -224,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(icon: Icon(Icons.list), label: 'Lista'),
           NavigationDestination(
               icon: Icon(Icons.grid_view), label: 'Cuadrícula'),
+          NavigationDestination(icon: Icon(Icons.search), label: 'Buscar'),
           NavigationDestination(
               icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],
