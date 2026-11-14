@@ -64,6 +64,37 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Entra con Google y deja el perfil de Firestore listo: si es la primera vez
+  // se crea, y si ya existía se deja como estaba.
+  Future<void> _entrarConGoogle() async {
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+    final r = await _auth.entrarConGoogle();
+    if (!mounted) return;
+    if (!r.esOk) {
+      setState(() {
+        _cargando = false;
+        _error = r.cancelado ? 'Has cancelado el acceso con Google.' : r.error;
+      });
+      return;
+    }
+    try {
+      final uid = _auth.uidActual!;
+      final perfiles = PerfilesService();
+      if (await perfiles.obtener(uid) == null) {
+        final nombre = _auth.nombreActual ??
+            (_auth.correoActual ?? 'Usuario').split('@').first;
+        await perfiles.guardar(uid, Perfil(nombre: nombre, edad: 0));
+      }
+    } catch (_) {
+      // Si el perfil falla, se puede entrar igual: se reintenta en otro acceso.
+    }
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
   Widget _formulario() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,6 +170,26 @@ class _LoginScreenState extends State<LoginScreen> {
             child: OutlinedButton(
               onPressed: () => _enviar(_auth.registrar, esRegistro: true),
               child: const Text('Registrarse'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('o', style: TextStyle(color: AppTema.textoSuave)),
+              ),
+              Expanded(child: Divider()),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _entrarConGoogle,
+              icon: const Icon(Icons.account_circle_outlined),
+              label: const Text('Continuar con Google'),
             ),
           ),
         ],
