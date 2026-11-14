@@ -24,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Mensaje>? _mensajes;
   Object? _error;
   int _seccion = 0;
+  // Sube al volver de crear un mensaje: fuerza a recargar cuadrícula y Buscar.
+  int _version = 0;
 
   @override
   void initState() {
@@ -41,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _suscripcion?.cancel(); // se cierra la suscripción al destruir la pantalla
     super.dispose();
+  }
+
+  Future<void> _nuevoMensaje() async {
+    await Navigator.pushNamed(context, '/nuevo');
+    if (!mounted) return;
+    setState(() => _version++);
   }
 
   Future<void> _cerrarSesion() async {
@@ -157,8 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final secciones = [
       _conEstados((m) => MensajesLista(mensajes: m)),
-      const CuadriculaPaginada(),
-      const BuscarMensajes(),
+      CuadriculaPaginada(key: ValueKey('cuadricula$_version')),
+      BuscarMensajes(key: ValueKey('buscar$_version')),
       _perfil(),
     ];
 
@@ -172,6 +180,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add_comment_outlined),
+            tooltip: 'Nuevo mensaje',
+            onPressed: _nuevoMensaje,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: CircleAvatar(

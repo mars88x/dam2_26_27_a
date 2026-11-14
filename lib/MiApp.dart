@@ -4,6 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/detalle_screen.dart';
+import 'screens/nuevo_mensaje_screen.dart';
 import 'theme/app_tema.dart';
 
 class MiApp extends StatelessWidget {
@@ -22,6 +23,7 @@ class MiApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/detalle': (context) => const DetalleScreen(),
+        '/nuevo': (context) => const NuevoMensajeScreen(),
       },
     );
   }

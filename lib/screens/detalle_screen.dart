@@ -48,15 +48,7 @@ class _DetalleScreenState extends State<DetalleScreen> {
       builder: (_) => _DialogoEditar(mensaje: _mensaje),
     );
     if (nuevo == null) return; // canceló
-    setState(() {
-      _mensaje = Mensaje(
-        id: _mensaje.id,
-        texto: nuevo,
-        autor: _mensaje.autor,
-        autorUid: _mensaje.autorUid,
-        fecha: _mensaje.fecha,
-      );
-    });
+    setState(() => _mensaje = _mensaje.conTexto(nuevo));
     if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Mensaje actualizado.')));
@@ -163,6 +155,19 @@ class _DetalleScreenState extends State<DetalleScreen> {
                     const SizedBox(width: 8),
                     Text('Fecha: ${f.day}/${f.month}/${f.year}'),
                   ]),
+                  if (_mensaje.ubicacion != null) ...[
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      const Icon(Icons.place_outlined,
+                          size: 18, color: AppTema.textoSuave),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                            'Lugar: ${_mensaje.ubicacion!.latitude.toStringAsFixed(5)}, '
+                            '${_mensaje.ubicacion!.longitude.toStringAsFixed(5)}'),
+                      ),
+                    ]),
+                  ],
                   if (_esMio) ...[
                     const SizedBox(height: 24),
                     Row(

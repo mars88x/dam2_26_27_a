@@ -8,6 +8,9 @@ class Mensaje {
   // Los mensajes antiguos no lo tienen y se leen con ''.
   final String autorUid;
   final DateTime fecha;
+  // Dónde estaba quien lo escribió y cuándo se leyó esa posición (opcionales).
+  final GeoPoint? ubicacion;
+  final DateTime? fechaUbicacion;
 
   const Mensaje({
     this.id,
@@ -15,7 +18,20 @@ class Mensaje {
     required this.autor,
     this.autorUid = '',
     required this.fecha,
+    this.ubicacion,
+    this.fechaUbicacion,
   });
+
+  // Copia con el texto cambiado (el resto de campos se conserva).
+  Mensaje conTexto(String nuevoTexto) => Mensaje(
+        id: id,
+        texto: nuevoTexto,
+        autor: autor,
+        autorUid: autorUid,
+        fecha: fecha,
+        ubicacion: ubicacion,
+        fechaUbicacion: fechaUbicacion,
+      );
 
   // Firestore - objeto Mensaje
   factory Mensaje.fromFirestore(
@@ -29,6 +45,8 @@ class Mensaje {
       autor: datos['autor'] ?? '',
       autorUid: datos['autorUid'] ?? '',
       fecha: (datos['fecha'] as Timestamp).toDate(),
+      ubicacion: datos['ubicacion'] as GeoPoint?,
+      fechaUbicacion: (datos['fechaUbicacion'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -39,6 +57,10 @@ class Mensaje {
       'autor': autor,
       'autorUid': autorUid,
       'fecha': Timestamp.fromDate(fecha),
+      // Solo se escriben si hay posición.
+      if (ubicacion != null) 'ubicacion': ubicacion,
+      if (fechaUbicacion != null)
+        'fechaUbicacion': Timestamp.fromDate(fechaUbicacion!),
     };
   }
 }
