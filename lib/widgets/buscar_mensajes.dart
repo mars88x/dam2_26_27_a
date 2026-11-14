@@ -122,7 +122,7 @@ class _BuscarMensajesState extends State<BuscarMensajes> {
         texto: 'Prueba a cambiar los filtros.',
       );
     }
-    return MensajesLista(mensajes: _resultados!);
+    return MensajesLista(mensajes: _resultados!, alVolver: _buscar);
   }
 
   @override

@@ -77,6 +77,16 @@ class MensajesService {
     return resultado.docs.map((d) => d.data()).toList();
   }
 
+  // Cambia solo el texto. Si el mensaje no es tuyo, las reglas lo rechazan
+  // con permission-denied aunque la interfaz no ofrezca el botón.
+  Future<void> actualizarTexto(String id, String texto) async {
+    await _coleccion.doc(id).update({'texto': texto});
+  }
+
+  Future<void> borrar(String id) async {
+    await _coleccion.doc(id).delete();
+  }
+
   Future<void> anadir(Mensaje mensaje) async {
     await _coleccion.add(mensaje);
   }

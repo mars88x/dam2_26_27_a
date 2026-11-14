@@ -4,7 +4,9 @@ import '../theme/app_tema.dart';
 
 class MensajesLista extends StatelessWidget {
   final List<Mensaje> mensajes;
-  const MensajesLista({super.key, required this.mensajes});
+  // Se llama al volver del detalle (por si el mensaje se editó o se borró).
+  final VoidCallback? alVolver;
+  const MensajesLista({super.key, required this.mensajes, this.alVolver});
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +47,10 @@ class MensajesLista extends StatelessWidget {
             ),
             trailing:
             const Icon(Icons.chevron_right, color: AppTema.textoSuave),
-            onTap: () =>
-                Navigator.pushNamed(context, '/detalle', arguments: m),
+            onTap: () async {
+              await Navigator.pushNamed(context, '/detalle', arguments: m);
+              alVolver?.call();
+            },
           ),
         );
       },

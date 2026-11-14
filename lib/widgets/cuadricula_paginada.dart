@@ -51,6 +51,14 @@ class _CuadriculaPaginadaState extends State<CuadriculaPaginada> {
     }
   }
 
+  // Vuelve a pedir desde la primera página (tras editar o borrar).
+  void _recargar() {
+    _mensajes.clear();
+    _ultimo = null;
+    _hayMas = true;
+    _cargarPagina();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_mensajes.isEmpty) {
@@ -87,7 +95,9 @@ class _CuadriculaPaginadaState extends State<CuadriculaPaginada> {
             ],
           ),
         ),
-        Expanded(child: MensajesCuadricula(mensajes: _mensajes)),
+        Expanded(
+            child: MensajesCuadricula(
+                mensajes: _mensajes, alVolver: _recargar)),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
           child: _pie(),

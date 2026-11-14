@@ -4,7 +4,10 @@ import '../theme/app_tema.dart';
 
 class MensajesCuadricula extends StatelessWidget {
   final List<Mensaje> mensajes;
-  const MensajesCuadricula({super.key, required this.mensajes});
+  // Se llama al volver del detalle (por si el mensaje se editó o se borró).
+  final VoidCallback? alVolver;
+  const MensajesCuadricula(
+      {super.key, required this.mensajes, this.alVolver});
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +29,10 @@ class MensajesCuadricula extends StatelessWidget {
           color: AppTema.pasteles[i % AppTema.pasteles.length],
           child: InkWell(
             borderRadius: BorderRadius.circular(AppTema.radio),
-            onTap: () =>
-                Navigator.pushNamed(context, '/detalle', arguments: m),
+            onTap: () async {
+              await Navigator.pushNamed(context, '/detalle', arguments: m);
+              alVolver?.call();
+            },
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
