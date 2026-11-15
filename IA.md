@@ -81,3 +81,52 @@
 * **Instrucción dada:** Mandé mi diseño de Figma y unas imágenes de referencia y pedí un estilo luminoso en azul y verde, con un fondo para las pantallas.
 * **Respuesta recibida:** Un tema con la paleta, un fondo con degradado y círculos difuminados, y el código rediseñado de cada pantalla.
 * **Cambios realizados y motivo:** Rechacé la primera propuesta porque no me gustaba y pedí otra con más azul y verde. Moví una línea `theme:` que había quedado fuera de `MaterialApp` y apilé los botones del login porque se desbordaban. Revisé que la lógica de las pantallas no cambiara, solo el aspecto.
+
+## Registro - Fase 1b: emuladores, datos de prueba y consultas
+* **Herramienta:** Claude
+* **Parte de la tarea:** `main.dart` con `USAR_EMULADORES`, `firebase.proyecto.json`, `firestore.rules`, `firestore.indexes.json`, `tools/seed.mjs`, el campo `autorUid` en `Mensaje`, las cuatro consultas de `MensajesService` y los widgets `CuadriculaPaginada`, `BuscarMensajes` y `EstadoPantalla`.
+* **Instrucción dada:** Le pasé el enunciado de la Fase 1b y el código de mi proyecto y pedí empezar por los emuladores y las consultas de Firestore.
+* **Respuesta recibida:** Los ficheros de configuración de los emuladores, un script que crea 3 usuarios y 22 mensajes, y el código de la lista (snapshots con `limit`), la cuadrícula paginada con `startAfterDocument` y la búsqueda por autor y fechas con el índice compuesto.
+* **Cambios realizados y motivo:** Lo probé con los emuladores en Chrome. Como el emulador de Firestore necesita Java y no lo tenía en el PATH, usé el de Android Studio (`JAVA_HOME`). Exporté los datos a `emulator-data` para poder importarlos con un comando. Revisé que la lista usa snapshots y la cuadrícula y la búsqueda usan `get`, y por qué.
+
+## Registro - Fase 1b: editar y borrar
+* **Herramienta:** Claude
+* **Parte de la tarea:** `detalle_screen.dart` (editar y borrar), `actualizarTexto` y `borrar` en `MensajesService`, y `tools/probar_reglas.mjs`.
+* **Instrucción dada:** Pedí editar y borrar mis propios mensajes con confirmación y estado de error, y comprobar que las reglas impiden tocar los ajenos.
+* **Respuesta recibida:** Botones que solo salen en mensajes propios, un cuadro de edición que muestra el error dentro, una confirmación antes de borrar y un script que intenta editar y borrar un mensaje de otro usuario.
+* **Cambios realizados y motivo:** Ejecuté el script y salieron las tres comprobaciones bien (200 al editar lo propio y 403 al editar y borrar lo ajeno). Probé en la app que en un mensaje de otra persona no salen los botones.
+
+## Registro - Fase 1b: posición con geolocator
+* **Herramienta:** Claude
+* **Parte de la tarea:** `ubicacion_service.dart`, `nuevo_mensaje_screen.dart`, permisos de localización en `AndroidManifest.xml` y `ubicacion`/`fechaUbicacion` en `Mensaje`.
+* **Instrucción dada:** Pedí leer la posición con `geolocator` tratando permiso denegado, GPS apagado y tiempo agotado, y guardarla como `GeoPoint` con un `Timestamp`.
+* **Respuesta recibida:** Un servicio que nunca lanza excepciones y devuelve la posición o el motivo del fallo, una pantalla para escribir un mensaje con el botón de ubicación y los datos de prueba con posiciones.
+* **Cambios realizados y motivo:** Probé en Chrome con el permiso concedido y bloqueado (desde el candado del navegador) y comprobé que no se queda cargando. Cada comprobación en Android la hago en el emulador.
+
+## Registro - Fase 1b: mapa y lista cerca de mí
+* **Herramienta:** Claude
+* **Parte de la tarea:** `mapa_mensajes.dart`, `cercania.dart` y `trabajo_isolate.dart`.
+* **Instrucción dada:** Pedí un mapa con `flutter_map` y OpenStreetMap con un marcador por mensaje, y una lista "cerca de mí" calculada en un isolate con progreso.
+* **Respuesta recibida:** El mapa con marcadores, atribución y `userAgentPackageName`, y una función que calcula distancias con Haversine que se lanza con `Isolate.run` y avisa del progreso. Al releer yo el enunciado vimos que faltaba centrar el mapa en el usuario y comunicar el progreso, y se corrigió.
+* **Cambios realizados y motivo:** Lo probé en Chrome y en el emulador. Entendí que en la web no hay isolates y que ordenar tan pocos documentos no lo necesita; lo dejé documentado en el README.
+
+## Registro - Fase 1b: foto desde cámara o galería
+* **Herramienta:** Claude
+* **Parte de la tarea:** `foto_service.dart`, la tarjeta de foto de `nuevo_mensaje_screen.dart`, el permiso de cámara y la miniatura en lista y detalle.
+* **Instrucción dada:** Pedí elegir una foto de la cámara o la galería, comprimirla en un isolate con una barra de progreso y guardarla en base64 en el documento.
+* **Respuesta recibida:** `image_picker` con el permiso denegado tratado, una función que reduce la foto a 800 px y baja la calidad hasta que pesa menos de 200 KB, y el guardado como texto.
+* **Cambios realizados y motivo:** Instalé `image_picker` e `image`, probé a elegir una foto y comprobé que la miniatura sale en la lista y en el detalle. Entendí por qué se comprime (límite de 1 MiB por documento) y que en la web el isolate no existe.
+
+## Registro - Fase 1b: acceso con Google
+* **Herramienta:** Claude
+* **Parte de la tarea:** `auth_service.dart` (`entrarConGoogle`), el botón en `login_screen.dart` y la configuración en Firebase.
+* **Instrucción dada:** Pedí entrar con Google en Android y en la web, con la cancelación y el error tratados, y crear el perfil de Firestore si la persona es nueva.
+* **Respuesta recibida:** El código para web (`signInWithPopup`) y Android (`google_sign_in` y `signInWithCredential`) y los pasos para activar Google, registrar las huellas SHA y descargar `google-services.json`.
+* **Cambios realizados y motivo:** Activé Google en Authentication, registré las huellas SHA-1 y SHA-256 y sustituí `google-services.json` (que no se sube al repositorio). `keytool` falló con Java en español y lo resolví poniéndolo en inglés. Probé en Chrome entrar y cancelar. En Android solo comprobé el selector de cuentas y la cancelación, porque no quise usar mi cuenta personal en el emulador.
+
+## Registro - Fase 1b: hosting y README
+* **Herramienta:** Claude
+* **Parte de la tarea:** Publicación en Firebase Hosting y el README de la Fase 1b.
+* **Instrucción dada:** Pedí los pasos para publicar la web con el plan gratuito y ayuda para redactar el README con los apartados que pide el enunciado.
+* **Respuesta recibida:** Los comandos `flutter build web` y `firebase deploy`, y un borrador del README con las consultas, la foto, los isolates, la posición y las pruebas.
+* **Cambios realizados y motivo:** Publiqué la web y comprobé que se puede registrar y usar. Revisé el README contra mi código y dejé como "Por probar" lo que aún no había comprobado.  
