@@ -54,3 +54,8 @@ app.*.map.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+.firebase/
+tools/node_modules/
+ui-debug.log
+firestore-debug.log
