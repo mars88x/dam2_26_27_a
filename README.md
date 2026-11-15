@@ -121,6 +121,8 @@ Los modelos usan `withConverter` con `fromFirestore` y `toFirestore`. Los campos
 
 Escucharlo todo siempre no es una decisión, es no haberla tomado: solo la lista tiene sentido en tiempo real.
 
+Las lecturas con `get` piden los datos al servidor (`GetOptions(source: Source.server)`). Al principio no lo hacía y, sin conexión, la cuadrícula decía "Todavía no hay mensajes" en vez de dar error, porque Firestore contesta con lo que tenga en memoria, que puede no ser nada. Lo descubrí al probar el estado de error.
+
 El **índice compuesto** que necesita la búsqueda por autor y fecha (`autorUid` ascendente + `fecha` descendente) está declarado en `firestore.indexes.json`, no creado a mano en la consola. La consulta por solo fechas no necesita índice propio.
 
 ## 7. Editar y borrar
@@ -211,27 +213,29 @@ Probado en el emulador de Android (Pixel 8, API 37) y en Chrome. Las capturas es
 
 | # | Prueba | Resultado esperado | Android | Chrome |
 |---|--------|--------------------|---------|--------|
-| 1 | Arrancar con los emuladores | Se ven los datos de `emulator-data` y el aviso "Running in emulator mode" | Por probar | Bien |
-| 2 | Lista (snapshots + limit) | Salen los 10 últimos mensajes | Por probar | Bien |
-| 3 | Cuadrícula paginada | 8 mensajes; "Cargar más" llega a 22 y aparece "No hay más mensajes" | Por probar | Bien |
-| 4 | Buscar: solo mis mensajes y fechas | Salen solo los del autor y/o del rango; rango sin mensajes, "Sin resultados." | Por probar | Bien |
-| 5 | Editar un mensaje propio | Cambia el texto y se ve al volver | Por probar | Bien |
-| 6 | Borrar con confirmación | Pide confirmación; al aceptar desaparece | Por probar | Bien |
-| 7 | Editar o borrar un mensaje ajeno | No salen los botones; las reglas devuelven 403 (`probar_reglas.mjs`) | Por probar | Bien |
+| 1 | Arrancar con los emuladores | Se ven los datos de `emulator-data` y el aviso "Running in emulator mode" | Bien | Bien |
+| 2 | Lista (snapshots + limit) | Salen los 10 últimos mensajes | Bien | Bien |
+| 3 | Cuadrícula paginada | 8 mensajes; "Cargar más" llega a 22 y aparece "No hay más mensajes" | Bien | Bien |
+| 4 | Buscar: solo mis mensajes y fechas | Salen solo los del autor y/o del rango; rango sin mensajes, "Sin resultados." | Bien | Bien |
+| 5 | Editar un mensaje propio | Cambia el texto y se ve al volver | Bien | Bien |
+| 6 | Borrar con confirmación | Pide confirmación; al aceptar desaparece | Bien | Bien |
+| 7 | Editar o borrar un mensaje ajeno | No salen los botones; las reglas devuelven 403 (`probar_reglas.mjs`) | Bien | Bien |
 | 8 | Añadir ubicación, permiso concedido | Salen las coordenadas y la precisión; el mensaje se guarda con `GeoPoint` | Bien | Bien |
-| 9 | Añadir ubicación, permiso denegado | Mensaje que dice qué hacer y botón Reintentar; no se cuelga | Por probar | Bien |
-| 10 | GPS apagado | Mensaje y botón de ajustes; no se cuelga | Por probar | No aplica |
-| 11 | Foto desde la galería y comprimida | Barra de progreso; miniatura de menos de 200 KB; se ve en lista y detalle | Por probar | Por probar |
-| 12 | Cámara con permiso denegado | Mensaje que dice qué hacer | Por probar | No aplica |
-| 13 | Mover la pantalla durante la compresión | La interfaz no se congela | Por probar | No aplica (la web no tiene isolates) |
-| 14 | Mapa centrado, marcadores y detalle | Marcadores de los mensajes con posición, atribución visible, tocar abre el detalle | Por probar | Bien |
-| 15 | Cerca de mí | Lista ordenada por distancia con progreso y tiempo | Por probar | Bien |
+| 9 | Añadir ubicación, permiso denegado | Mensaje que dice qué hacer y botón Reintentar; no se cuelga | Bien | Bien |
+| 10 | GPS apagado | Mensaje y botón de ajustes; no se cuelga | Bien | No aplica |
+| 11 | Foto desde la galería y comprimida | Barra de progreso; miniatura de menos de 200 KB; se ve en lista y detalle | Bien | Bien |
+| 12 | Cámara con permiso denegado | Mensaje que dice qué hacer | Bien | No aplica |
+| 13 | Mover la pantalla durante la compresión | La interfaz no se congela | Bien (pude mover la pantalla mientras comprimía) | No aplica (la web no tiene isolates) |
+| 14 | Mapa centrado, marcadores y detalle | Marcadores de los mensajes con posición, atribución visible, tocar abre el detalle | Bien | Bien |
+| 15 | Cerca de mí | Lista ordenada por distancia con progreso y tiempo | Bien | Bien |
 | 16 | Google: entrar | Entra y se crea el perfil la primera vez | Solo se probó el selector | Bien |
 | 17 | Google: cancelar | "Has cancelado el acceso con Google." | Bien | Bien |
-| 18 | Sin conexión | La pantalla muestra el estado de error con botón Reintentar | Por probar | Por probar |
+| 18 | Sin conexión | La cuadrícula muestra el estado de error con botón Reintentar | Bien | Bien (con una limitación, ver abajo) |
 | 19 | Web publicada | Se puede registrar, entrar y usar la app en https://prueba1-22fe9.web.app | No aplica | Bien |
 
-Las filas marcadas "Por probar" son las que aún no he comprobado en esa plataforma; las actualizo antes de entregar. La fila 16 en Android **no está verificada de principio a fin**: no quise iniciar sesión con mi cuenta personal en el emulador, así que solo comprobé que aparece el botón, que se abre el selector de cuentas y que cancelar funciona.
+La fila 16 en Android **no está verificada de principio a fin**: no quise iniciar sesión con mi cuenta personal en el emulador, así que solo comprobé que aparece el botón, que se abre el selector de cuentas y que cancelar funciona.
+
+**Limitación sin conexión:** la pestaña **Lista** escucha en tiempo real (snapshots) y, si no hay conexión y no tiene nada en memoria, enseña "Todavía no hay mensajes" en vez de un error, porque Firestore no la trata como un fallo. Lo vi en Chrome al apagar los emuladores y reiniciar la app. Las pantallas que leen una vez (cuadrícula, Buscar y Mapa) piden los datos al servidor (`Source.server`) y por eso fallan sin conexión; comprobé el error en la cuadrícula. Dejar la Lista bien sin conexión es justo el trabajo de la Fase 2.
 
 **Diferencias entre Android y Chrome:**
 
@@ -267,4 +271,4 @@ Para Android, la misma línea sin `-d chrome` y con el emulador abierto.
 
 ## 14. Uso de IA
 
-El registro de uso de IA está en [IA.md](IA.md).
+El registro de uso de IA está en IA.md.
