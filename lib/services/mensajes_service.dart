@@ -14,6 +14,12 @@ class PaginaMensajes {
   });
 }
 
+// Las lecturas de una sola vez (get) piden los datos al servidor. Sin esto,
+// si no hay conexión Firestore contesta con lo que tenga en memoria, que puede
+// ser nada, y la pantalla diría "no hay mensajes" cuando en realidad no hay red.
+// Así, sin conexión falla de verdad y la pantalla enseña su estado de error.
+const _soloServidor = GetOptions(source: Source.server);
+
 class MensajesService {
   final CollectionReference<Mensaje> _coleccion =
   FirebaseFirestore.instance.collection('mensajes').withConverter<Mensaje>(
@@ -42,7 +48,7 @@ class MensajesService {
     if (despuesDe != null) {
       consulta = consulta.startAfterDocument(despuesDe);
     }
-    final resultado = await consulta.get();
+    final resultado = await consulta.get(_soloServidor);
     return PaginaMensajes(
       mensajes: resultado.docs.map((d) => d.data()).toList(),
       ultimo: resultado.docs.isEmpty ? despuesDe : resultado.docs.last,
@@ -73,7 +79,10 @@ class MensajesService {
           isLessThan: Timestamp.fromDate(hasta.add(const Duration(days: 1))));
     }
     final resultado =
-    await consulta.orderBy('fecha', descending: true).limit(50).get();
+    await consulta
+        .orderBy('fecha', descending: true)
+        .limit(50)
+        .get(_soloServidor);
     return resultado.docs.map((d) => d.data()).toList();
   }
 
@@ -81,7 +90,10 @@ class MensajesService {
   // existe" cómodo, así que se leen los 100 últimos y se filtra aquí.
   Future<List<Mensaje>> conUbicacion() async {
     final resultado =
-    await _coleccion.orderBy('fecha', descending: true).limit(100).get();
+    await _coleccion
+        .orderBy('fecha', descending: true)
+        .limit(100)
+        .get(_soloServidor);
     return resultado.docs
         .map((d) => d.data())
         .where((m) => m.ubicacion != null)
